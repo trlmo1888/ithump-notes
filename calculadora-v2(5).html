@@ -1,0 +1,2408 @@
+<!DOCTYPE html>
+<!-- saved from url=(0043)https://tricks.lizarraga.eus/calc-telm.html -->
+<html lang="es"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Calculadora</title>
+    
+    <!-- iOS Web App -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-title" content="Calculadora">
+    <meta name="theme-color" content="#000000">
+
+    <link rel="apple-touch-icon" href="icon.png">
+     <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="theme-color" content="#000000">
+  <link rel="manifest" href="https://tricks.lizarraga.eus/calctelmanifest.json">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+        }
+
+        /* Theme variables */
+        :root {
+            /* iPhone theme (default) */
+            --bg-color: #000;
+            --display-color: #fff;
+            --btn-gray-bg: #a5a5a5;
+            --btn-gray-text: #000;
+            --btn-orange-bg: #ff9f0a;
+            --btn-orange-text: #fff;
+            --btn-dark-bg: #333333;
+            --btn-dark-text: #fff;
+        }
+
+        /* Android Light theme */
+        body.android-light {
+            --bg-color: #f1f3f4;
+            --display-color: #202124;
+            --btn-gray-bg: #dadce0;
+            --btn-gray-text: #202124;
+            --btn-orange-bg: #1a73e8;
+            --btn-orange-text: #fff;
+            --btn-dark-bg: #fff;
+            --btn-dark-text: #202124;
+        }
+
+        /* Android Dark theme */
+        body.android-dark {
+            --bg-color: #202124;
+            --display-color: #fff;
+            --btn-gray-bg: #5f6368;
+            --btn-gray-text: #fff;
+            --btn-orange-bg: #8ab4f8;
+            --btn-orange-text: #202124;
+            --btn-dark-bg: #3c4043;
+            --btn-dark-text: #fff;
+        }
+
+        /* S.A. theme (Samsung/Android style - with C button) */
+        body.sa {
+            --bg-color: #000;
+            --display-color: #e0d5c7;
+            --btn-gray-bg: #2a2a2a;
+            --btn-gray-text: #e0d5c7;
+            --btn-orange-bg: #8a9277;
+            --btn-orange-text: #000;
+            --btn-dark-bg: #1f1f1f;
+            --btn-dark-text: #e0d5c7;
+        }
+
+        /* S.A. mode typography - Samsung style */
+        body.sa .display-text {
+            font-family: 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+            font-weight: 300;
+            letter-spacing: -0.01em;
+        }
+
+        body.sa .btn {
+            font-family: 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+        }
+
+        body.sa .btn-gray {
+            font-weight: 400;
+            font-size: 34px;
+        }
+
+        body.sa .btn-dark {
+            font-weight: 300;
+            font-size: 38px;
+        }
+
+        body.sa .btn-orange {
+            font-weight: 400;
+            font-size: 42px;
+        }
+
+        body.sa .btn-zero {
+            font-size: 38px;
+        }
+
+        body.sa .buttons {
+            gap: 12px;
+            padding: 12px;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background: var(--bg-color);
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
+            /* Fallback */
+            height: 100dvh;
+            overflow: hidden;
+            position: fixed;
+            /* Safe area handling for body background */
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
+            padding-left: env(safe-area-inset-left);
+            padding-right: env(safe-area-inset-right);
+        }
+
+        .calculator {
+            width: 100%;
+            height: 100%;
+            background: var(--bg-color);
+            display: flex;
+            flex-direction: column;
+            padding: 0;
+        }
+
+        .display {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            justify-content: flex-end;
+            padding: 20px 24px 16px 24px;
+            overflow: visible;
+        }
+
+        .display-text {
+            color: var(--display-color);
+            font-size: 96px;
+            font-weight: 200;
+            text-align: right;
+            line-height: 1.1;
+            letter-spacing: -0.02em;
+            white-space: nowrap;
+            max-width: 100%;
+            transition: font-size 0.1s ease;
+        }
+
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            padding: 10px 10px 20px 10px;
+        }
+
+        .btn {
+            aspect-ratio: 1;
+            border-radius: 50%;
+            border: none;
+            font-size: 42px;
+            font-weight: 400;
+            cursor: pointer;
+            transition: opacity 0.1s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn:active {
+            opacity: 0.4;
+            transition: opacity 0s;
+            /* Instant feedback */
+        }
+
+        .btn-gray {
+            background: var(--btn-gray-bg);
+            color: var(--btn-gray-text);
+            font-size: 38px;
+            font-weight: 500;
+        }
+
+        /* S.A. mode: First gray button (C) should be red */
+        body.sa .btn-gray:first-of-type {
+            color: #f44336;
+        }
+
+        .btn-orange {
+            background: var(--btn-orange-bg);
+            color: var(--btn-orange-text);
+            font-size: 46px;
+            font-weight: 400;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            margin: 0;
+            position: relative;
+        }
+
+        .btn-orange span {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            line-height: 1;
+            display: block;
+            font-feature-settings: 'tnum';
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            margin-top: -2px;
+        }
+
+        .btn-orange.active {
+            background: var(--btn-orange-text);
+            color: var(--btn-orange-bg);
+        }
+
+        .btn-dark {
+            background: var(--btn-dark-bg);
+            color: var(--btn-dark-text);
+            font-size: 42px;
+            font-weight: 400;
+        }
+
+        .btn-zero {
+            grid-column: span 2;
+            border-radius: 50px;
+            justify-content: flex-start;
+            padding-left: 30px;
+            aspect-ratio: auto;
+        }
+
+        /* Secret menu overlay */
+        .secret-menu {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .secret-menu.active {
+            display: flex;
+        }
+
+        .menu-container {
+            background: #1c1c1e;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 550px;
+            width: 95%;
+            max-height: 80vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .menu-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 20px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #333;
+            flex-shrink: 0;
+        }
+
+        .menu-title {
+            color: #fff;
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .close-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #333;
+            color: #fff;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .menu-content {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding-right: 5px;
+            flex: 1;
+            min-height: 0;
+        }
+
+        .menu-content::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .menu-content::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .menu-content::-webkit-scrollbar-thumb {
+            background: #444;
+            border-radius: 3px;
+        }
+
+        .menu-content::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        .mode-button {
+            padding: 20px;
+            border-radius: 16px;
+            background: #1c1c1e;
+            color: #fff;
+            border: 2px solid transparent;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .mode-button.selected {
+            border-color: #ff9f0a;
+            background: #2c2c2e;
+        }
+
+        .checkmark {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: 2px solid #666;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        .mode-button.selected .checkmark {
+            background: #ff9f0a;
+            border-color: #ff9f0a;
+            color: #000;
+        }
+
+        .custom-input-container {
+            display: none;
+            padding: 20px;
+            border-radius: 16px;
+            background: #1c1c1e;
+            margin-top: 10px;
+        }
+
+        .custom-input-container.active {
+            display: block;
+        }
+
+        .custom-input {
+            width: 100%;
+            padding: 15px;
+            border-radius: 10px;
+            border: 2px solid #333;
+            background: #000;
+            color: #fff;
+            font-size: 18px;
+            text-align: center;
+        }
+
+        .input-label {
+            color: #999;
+            font-size: 14px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .time-buttons {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .time-btn {
+            padding: 8px 12px;
+            border-radius: 8px;
+            background: #2c2c2e;
+            color: #fff;
+            border: 2px solid #444;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            flex: 1;
+            min-width: 60px;
+            text-align: center;
+        }
+
+        .time-btn.selected {
+            background: #ff9f0a;
+            border-color: #ff9f0a;
+            color: #000;
+            font-weight: 600;
+        }
+
+        /* Theme selector styles */
+        .theme-selector {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #333;
+        }
+
+        .theme-btn {
+            flex: 1;
+            padding: 10px;
+            border-radius: 8px;
+            background: #2c2c2e;
+            color: #fff;
+            border: 2px solid #444;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .theme-btn.selected {
+            border-color: #ff9f0a;
+            background: #3c3c3e;
+        }
+
+        /* Spectator+ mode styles */
+        .submode-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .submode-btn {
+            flex: 1;
+            padding: 15px;
+            border-radius: 12px;
+            background: #2c2c2e;
+            color: #fff;
+            border: 2px solid #444;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .submode-btn.selected {
+            border-color: #ff9f0a;
+            background: #3c3c3e;
+        }
+
+        .format-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 12px;
+            align-items: center;
+        }
+
+        .format-btn {
+            flex: 1;
+            padding: 12px;
+            border-radius: 10px;
+            background: #2c2c2e;
+            color: #fff;
+            border: 2px solid #444;
+            font-size: 15px;
+            cursor: pointer;
+        }
+
+        .format-btn.selected {
+            background: #ff9f0a;
+            border-color: #ff9f0a;
+            color: #000;
+            font-weight: 600;
+        }
+
+        .settings-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: #2c2c2e;
+            color: #fff;
+            border: 2px solid #444;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Name popup */
+        .name-popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 2000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .name-popup.active {
+            display: flex;
+        }
+
+        .name-popup-content {
+            background: #1c1c1e;
+            border-radius: 20px;
+            padding: 30px;
+            min-width: 320px;
+        }
+
+        .name-popup-title {
+            color: #fff;
+            font-size: 20px;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .name-input {
+            width: 100%;
+            padding: 15px;
+            border-radius: 10px;
+            border: 2px solid #333;
+            background: #000;
+            color: #fff;
+            font-size: 18px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .name-input:focus {
+            outline: none;
+            border-color: #ff9f0a;
+        }
+
+        .popup-field-label {
+            color: #999;
+            font-size: 13px;
+            text-align: center;
+            margin-bottom: 6px;
+            margin-top: 4px;
+        }
+
+        .ok-btn {
+            width: 100%;
+            padding: 15px;
+            border-radius: 10px;
+            background: #ff9f0a;
+            color: #000;
+            border: none;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* Info popup */
+        .info-popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 2000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .info-popup.active {
+            display: flex;
+        }
+
+        .info-popup-content {
+            background: #1c1c1e;
+            border-radius: 20px;
+            padding: 30px;
+            min-width: 320px;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .info-popup-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .info-content {
+            background: #2c2c2e;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            color: #fff;
+            line-height: 1.6;
+        }
+
+        .info-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .info-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #444;
+        }
+
+        .info-list li:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            color: #999;
+            font-size: 14px;
+        }
+
+        .info-value {
+            color: #fff;
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .info-buttons {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .copy-btn {
+            flex: 1;
+            padding: 15px;
+            border-radius: 10px;
+            background: #ff9f0a;
+            color: #000;
+            border: none;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .send-btn {
+            width: 56px;
+            height: 50px;
+            border-radius: 10px;
+            background: #34c759;
+            color: #fff;
+            border: none;
+            font-size: 22px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .send-btn:active {
+            opacity: 0.7;
+        }
+
+        .fav-number-display {
+            text-align: center;
+            color: #999;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+
+        /* Template editor popup */
+        input,
+        textarea {
+            font-size: 16px !important;
+            /* Prevent iOS zoom */
+        }
+
+        /* Template editor popup */
+        .template-popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 3000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .template-popup.active {
+            display: flex;
+        }
+
+        .template-popup-content {
+            background: #1c1c1e;
+            border-radius: 20px;
+            padding: 30px;
+            min-width: 320px;
+            max-width: 500px;
+        }
+
+        .template-textarea {
+            width: 100%;
+            min-height: 150px;
+            padding: 15px;
+            border-radius: 10px;
+            border: 2px solid #333;
+            background: #000;
+            color: #fff;
+            font-size: 16px;
+            resize: vertical;
+            margin-bottom: 20px;
+            font-family: inherit;
+        }
+
+        /* Registry popup styles */
+        .registry-popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 3000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .registry-popup.active {
+            display: flex;
+        }
+
+        .registry-popup-content {
+            background: #1c1c1e;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 600px;
+            width: 95%;
+            max-height: 80vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .registry-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #333;
+        }
+
+        .registry-title {
+            color: #fff;
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .registry-list {
+            overflow-y: auto;
+            flex: 1;
+            min-height: 0;
+        }
+
+        .registry-list::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .registry-list::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .registry-list::-webkit-scrollbar-thumb {
+            background: #444;
+            border-radius: 4px;
+        }
+
+        .registry-item {
+            background: #2a2a2a;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 12px;
+        }
+
+        .registry-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .registry-name {
+            color: #ff9f0a;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .registry-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .registry-edit-btn,
+        .registry-delete-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        .registry-edit-btn {
+            background: #444;
+            color: #fff;
+        }
+
+        .registry-delete-btn {
+            background: #ff3b30;
+            color: #fff;
+        }
+
+        .registry-info {
+            color: #ccc;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .registry-info-row {
+            display: flex;
+            margin-bottom: 5px;
+        }
+
+        .registry-label {
+            font-weight: 600;
+            margin-right: 8px;
+            color: #999;
+        }
+
+        .registry-comment {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #444;
+            color: #aaa;
+            font-size: 13px;
+            font-style: italic;
+        }
+
+        .comment-popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 4000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .comment-popup.active {
+            display: flex;
+        }
+
+        .comment-popup-content {
+            background: #1c1c1e;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 400px;
+            width: 95%;
+        }
+
+        .comment-textarea {
+            width: 100%;
+            min-height: 100px;
+            padding: 15px;
+            border-radius: 10px;
+            border: 2px solid #333;
+            background: #000;
+            color: #fff;
+            font-size: 16px;
+            resize: vertical;
+            margin-bottom: 20px;
+        }
+
+        .comment-textarea:focus {
+            outline: none;
+            border-color: #ff9f0a;
+        }
+
+        .empty-registry {
+            text-align: center;
+            color: #666;
+            padding: 40px 20px;
+            font-size: 16px;
+        }
+
+        /* Long-press confirmation indicator */
+        .longpress-indicator {
+            position: fixed;
+            top: 8px;
+            left: 8px;
+            width: 3px;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 50%;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            z-index: 9999;
+            pointer-events: none;
+        }
+
+        .longpress-indicator.show {
+            opacity: 1;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Long-press confirmation indicator -->
+    <div class="longpress-indicator" id="longpress-indicator"></div>
+    
+    <div class="calculator">
+        <div class="display">
+            <div class="display-text" id="display" style="font-size: 96px;">0</div>
+        </div>
+        <div class="buttons">
+            <button class="btn btn-gray" id="ac-button" onclick="clearAll()">AC</button>
+            <button class="btn btn-gray" onclick="toggleSign()">+/-</button>
+            <button class="btn btn-gray" onclick="openSecretMenu()">%</button>
+            <button class="btn btn-orange" onclick="lastEvent=event; setOperation(&#39;÷&#39;)"><span>÷</span></button>
+
+            <button class="btn btn-dark" onclick="appendNumber(&#39;7&#39;)">7</button>
+            <button class="btn btn-dark" onclick="appendNumber(&#39;8&#39;)">8</button>
+            <button class="btn btn-dark" onclick="appendNumber(&#39;9&#39;)">9</button>
+            <button class="btn btn-orange" onclick="lastEvent=event; setOperation(&#39;×&#39;)"><span>×</span></button>
+
+            <button class="btn btn-dark" onclick="appendNumber(&#39;4&#39;)">4</button>
+            <button class="btn btn-dark" onclick="appendNumber(&#39;5&#39;)">5</button>
+            <button class="btn btn-dark" onclick="appendNumber(&#39;6&#39;)">6</button>
+            <button class="btn btn-orange" onclick="lastEvent=event; setOperation(&#39;-&#39;)"><span>−</span></button>
+
+            <button class="btn btn-dark" onclick="appendNumber(&#39;1&#39;)">1</button>
+            <button class="btn btn-dark" onclick="appendNumber(&#39;2&#39;)">2</button>
+            <button class="btn btn-dark" onclick="appendNumber(&#39;3&#39;)">3</button>
+            <button class="btn btn-orange" onclick="lastEvent=event; setOperation(&#39;+&#39;)"><span>+</span></button>
+
+            <button class="btn btn-dark btn-zero" onclick="appendNumber(&#39;0&#39;)">0</button>
+            <button class="btn btn-dark" onclick="appendDecimal()">,</button>
+            <button class="btn btn-orange" id="equals-btn" ontouchstart="lastEvent=event; startEqualsLongPress(event)" ontouchend="endEqualsLongPress()" onmousedown="lastEvent=event; startEqualsLongPress(event)" onmouseup="endEqualsLongPress()"><span>=</span></button>
+        </div>
+    </div>
+
+    <!-- Secret Menu -->
+    <div class="secret-menu" id="secret-menu">
+        <div class="menu-container">
+            <div class="menu-header">
+                <div class="menu-title">Modo Mágico</div>
+                <button class="close-btn" onclick="closeSecretMenu()">✕</button>
+            </div>
+            <div class="menu-content">
+                <!-- Theme Selector -->
+                <div class="theme-selector">
+                    <button class="theme-btn selected" id="theme-iphone-btn" onclick="selectTheme(&#39;iphone&#39;)">iPhone</button>
+                    <button class="theme-btn" id="theme-sa-btn" onclick="selectTheme(&#39;sa&#39;)">S.A.</button>
+                    <button class="theme-btn" id="theme-android-light-btn" onclick="selectTheme(&#39;android-light&#39;)">Android Claro</button>
+                    <button class="theme-btn" id="theme-android-dark-btn" onclick="selectTheme(&#39;android-dark&#39;)">Android
+                        Oscuro</button>
+                </div>
+
+                <button class="mode-button selected" id="date-mode-btn" onclick="selectMode(&#39;date&#39;)">
+                    <span>Modo Fecha</span>
+                    <span class="checkmark">✓</span>
+                </button>
+                <div class="time-buttons" id="date-time-buttons">
+                    <button class="time-btn selected" onclick="lastEvent=event; selectTimeThreshold(10)">10s</button>
+                    <button class="time-btn" onclick="lastEvent=event; selectTimeThreshold(15)">15s</button>
+                    <button class="time-btn" onclick="lastEvent=event; selectTimeThreshold(20)">20s</button>
+                    <button class="time-btn" onclick="lastEvent=event; selectTimeThreshold(&#39;10-15&#39;)">10-15s</button>
+                    <button class="time-btn" onclick="lastEvent=event; selectTimeThreshold(&#39;10-20&#39;)">10-20s</button>
+                </div>
+
+                <button class="mode-button" id="custom-mode-btn" onclick="selectMode(&#39;custom&#39;)">
+                    <span>Personalizado</span>
+                    <span class="checkmark"></span>
+                </button>
+                <div class="time-buttons" id="custom-time-buttons" style="display: none;">
+                    <button class="time-btn selected" onclick="lastEvent=event; selectTimeThreshold(10)">10s</button>
+                    <button class="time-btn" onclick="lastEvent=event; selectTimeThreshold(15)">15s</button>
+                    <button class="time-btn" onclick="lastEvent=event; selectTimeThreshold(20)">20s</button>
+                    <button class="time-btn" onclick="lastEvent=event; selectTimeThreshold(&#39;10-15&#39;)">10-15s</button>
+                    <button class="time-btn" onclick="lastEvent=event; selectTimeThreshold(&#39;10-20&#39;)">10-20s</button>
+                </div>
+
+                <div class="custom-input-container" id="custom-input-container">
+                    <div class="input-label">Introduce el número final deseado:</div>
+                    <input type="text" class="custom-input" id="custom-result" placeholder="Ej: 123456789" maxlength="16">
+                </div>
+
+                <button class="mode-button" id="custom2-mode-btn" onclick="selectMode(&#39;custom2&#39;)">
+                    <span>Personalizado 2</span>
+                    <span class="checkmark"></span>
+                </button>
+
+                <!-- Spectator+ Mode -->
+                <button class="mode-button" id="spectator-mode-btn" onclick="selectMode(&#39;spectator&#39;)">
+                    <span>Espectador+</span>
+                    <span class="checkmark"></span>
+                </button>
+                <div id="spectator-options" style="display: none;">
+                    <!-- Submode buttons -->
+                    <div class="submode-buttons">
+                        <button class="submode-btn selected" id="spectator-date-btn" onclick="selectSpectatorSubmode(&#39;date&#39;)">Hora</button>
+                        <button class="submode-btn" id="spectator-custom-btn" onclick="selectSpectatorSubmode(&#39;custom&#39;)">Personalizado</button>
+                        <button class="submode-btn" id="spectator-custom2-btn" onclick="selectSpectatorSubmode(&#39;custom2&#39;)">Personalizado 2</button>
+                    </div>
+
+                    <!-- Name/No Name buttons -->
+                    <div class="input-label" style="margin-top: 15px; margin-bottom: 10px;">Modo de nombre:</div>
+                    <div class="format-buttons">
+                        <button class="format-btn selected" id="name-mode-name-btn" onclick="selectNameMode(&#39;name&#39;)">Name</button>
+                        <button class="format-btn" id="name-mode-noname-btn" onclick="selectNameMode(&#39;noname&#39;)">No Name</button>
+                    </div>
+
+                    <!-- Format buttons -->
+                    <div class="format-buttons">
+                        <button class="format-btn selected" id="format-list-btn" onclick="selectFormat(&#39;list&#39;)">Lista</button>
+                        <button class="format-btn" id="format-text-btn" onclick="selectFormat(&#39;text&#39;)">Texto</button>
+                        <button class="settings-btn" id="template-settings-btn" onclick="openTemplateEditor()" style="display: none;">⚙</button>
+                    </div>
+
+                    <!-- Time buttons for date submode -->
+                    <div class="time-buttons" id="spectator-date-time-buttons">
+                        <button class="time-btn selected" onclick="lastEvent=event; selectTimeThreshold(10)">10s</button>
+                        <button class="time-btn" onclick="lastEvent=event; selectTimeThreshold(15)">15s</button>
+                        <button class="time-btn" onclick="lastEvent=event; selectTimeThreshold(20)">20s</button>
+                        <button class="time-btn" onclick="lastEvent=event; selectTimeThreshold(&#39;10-15&#39;)">10-15s</button>
+                        <button class="time-btn" onclick="lastEvent=event; selectTimeThreshold(&#39;10-20&#39;)">10-20s</button>
+                    </div>
+
+                    <!-- Options for custom submode -->
+                    <div id="spectator-custom-options" style="display: none;">
+                        <div class="time-buttons">
+                            <button class="time-btn selected" onclick="lastEvent=event; selectTimeThreshold(10)">10s</button>
+                            <button class="time-btn" onclick="lastEvent=event; selectTimeThreshold(15)">15s</button>
+                            <button class="time-btn" onclick="lastEvent=event; selectTimeThreshold(20)">20s</button>
+                            <button class="time-btn" onclick="lastEvent=event; selectTimeThreshold(&#39;10-15&#39;)">10-15s</button>
+                            <button class="time-btn" onclick="lastEvent=event; selectTimeThreshold(&#39;10-20&#39;)">10-20s</button>
+                        </div>
+                        <div class="custom-input-container active">
+                            <div class="input-label">Introduce el número final deseado:</div>
+                            <input type="text" class="custom-input" id="spectator-custom-result" placeholder="Ej: 123456789" maxlength="16">
+                        </div>
+                    </div>
+
+                    <!-- Options for custom2 submode -->
+                    <div id="spectator-custom2-options" style="display: none;">
+                        <div class="input-label" style="margin-bottom: 10px;">Orden de entrada:</div>
+                        <div class="format-buttons">
+                            <button class="format-btn selected" id="order-name-number-btn" onclick="selectInputOrder(&#39;name-number&#39;)">Nombre, Número</button>
+                            <button class="format-btn" id="order-number-name-btn" onclick="selectInputOrder(&#39;number-name&#39;)">Número, Nombre</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Registry Button -->
+                <button class="mode-button" onclick="openRegistry()" style="background: #2a2a2a; margin-top: 10px;">
+                    <span>📋 Registro</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Name/Number Popup -->
+    <div class="name-popup" id="name-popup">
+        <div class="name-popup-content">
+            <div class="name-popup-title" id="name-popup-title">Nombre del espectador</div>
+            <div id="name-field" style="display: block;">
+                <div class="popup-field-label" id="name-field-label" style="display: none;">Nombre</div>
+                <input type="text" class="name-input" id="spectator-name" placeholder="Escribe el nombre...">
+            </div>
+            <div id="number-field" style="display: none;">
+                <div class="popup-field-label">Número</div>
+                <input type="text" class="name-input" id="popup-number" placeholder="Introduce el número..." inputmode="numeric">
+            </div>
+            <button class="ok-btn" onclick="confirmName()">OK</button>
+        </div>
+    </div>
+
+    <!-- Info Popup -->
+    <div class="info-popup" id="info-popup">
+        <div class="info-popup-content">
+            <div class="info-popup-header">
+                <div class="menu-title">Información</div>
+                <button class="close-btn" onclick="closeInfoPopup()">✕</button>
+            </div>
+            <div class="info-content" id="info-content"></div>
+            <div class="info-buttons">
+                <button class="copy-btn" onclick="lastEvent=event; copyInfo()">Copiar</button>
+                <button class="send-btn" onclick="sendToNotes()">📤</button>
+            </div>
+            <div class="fav-number-display" id="fav-number-display" style="display: none;"></div>
+        </div>
+    </div>
+
+    <!-- Template Editor Popup -->
+    <div class="template-popup" id="template-popup">
+        <div class="template-popup-content">
+            <div class="menu-header">
+                <div class="menu-title" id="template-popup-title">Editar Template</div>
+                <button class="close-btn" onclick="closeTemplateEditor()">✕</button>
+            </div>
+            <textarea class="template-textarea" id="template-text"></textarea>
+            <button class="ok-btn" onclick="saveTemplate()">Guardar</button>
+        </div>
+    </div>
+
+    <!-- Registry Popup -->
+    <div class="registry-popup" id="registry-popup">
+        <div class="registry-popup-content">
+            <div class="registry-header">
+                <div class="registry-title">Registro de Espectadores</div>
+                <button class="close-btn" onclick="closeRegistry()">✕</button>
+            </div>
+            <div class="registry-list" id="registry-list">
+                <!-- Registry items will be dynamically added here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Comment Editor Popup -->
+    <div class="comment-popup" id="comment-popup">
+        <div class="comment-popup-content">
+            <div class="menu-header">
+                <div class="menu-title">Añadir Comentario</div>
+                <button class="close-btn" onclick="closeCommentEditor()">✕</button>
+            </div>
+            <textarea class="comment-textarea" id="comment-textarea" placeholder="Escribe un comentario sobre este registro..."></textarea>
+            <button class="ok-btn" onclick="saveComment()">Guardar</button>
+        </div>
+    </div>
+
+    <script>
+        let display = document.getElementById('display');
+        let currentValue = '0';
+        let previousValue = null;
+        let operation = null;
+        let shouldResetDisplay = false;
+        let multiplicationCount = 0;
+        let magicTriggered = false;
+        let waitingForMagicTrigger = false;
+        let screenLocked = false;
+
+        // Mode management
+        let magicMode = 'date'; // 'date', 'custom', or 'spectator'
+        let customResult = '';
+        let timeThreshold = 10; // Default: 10 seconds
+
+        // Long press for equals button
+        let equalsLongPressTimer = null;
+        let isEqualsLongPress = false;
+        let customModeActivated = false;
+
+        // Spectator+ mode variables
+        let spectatorSubmode = 'date'; // 'date', 'custom', or 'custom2'
+        let spectatorFormat = 'list'; // 'list' or 'text'
+        let spectatorName = '';
+        let spectatorNumbers = []; // [birthdate, favNumber, ...extras]
+        let spectatorCustomResult = '';
+        let custom2Result = ''; // Personalizado 2: number entered via popup
+        let inputOrder = 'name-number'; // 'name-number' or 'number-name' for spectator custom2
+        let nameMode = 'name'; // 'name' or 'noname' for spectator+
+        let textTemplate = 'Hoy haré un poco de magia para [Nombre]. Tiene [Edad] años y me da la sensación de que su signo zodiacal es [Signo zodiacal]. Cada pequeño detalle suyo ha sido parte de la ilusión que he creado.';
+        let textTemplateNoName = 'Hoy haré un poco de magia para alguien muy especial. Tiene [Edad] años y me da la sensación de que su signo zodiacal es [Signo zodiacal]. Cada pequeño detalle suyo ha sido parte de la ilusión que he creado.';
+
+        // Theme variable
+        let currentTheme = 'iphone'; // 'iphone', 'sa', 'android-light', or 'android-dark'
+
+        // Registry variables
+        let registryData = [];
+        let currentEditingRegistryId = null;
+
+        // Global event storage for standalone mode compatibility
+        let lastEvent = null;
+
+        // Load registry from localStorage on startup
+        function loadRegistry() {
+            const saved = localStorage.getItem('spectatorRegistry');
+            if (saved) {
+                try {
+                    registryData = JSON.parse(saved);
+                } catch (e) {
+                    registryData = [];
+                }
+            }
+        }
+
+        // Save registry to localStorage
+        function saveRegistryData() {
+            localStorage.setItem('spectatorRegistry', JSON.stringify(registryData));
+        }
+
+        // Helper function to get current event (works in both browser and standalone mode)
+        function getCurrentEvent() {
+            return lastEvent || window.event || event;
+        }
+
+        function selectTheme(theme) {
+            currentTheme = theme;
+
+            // Remove all theme classes
+            document.body.classList.remove('sa', 'android-light', 'android-dark');
+
+            // Add theme class if not iPhone (iPhone is default/no class)
+            if (theme === 'sa') {
+                document.body.classList.add('sa');
+                const acBtn = document.getElementById('ac-button');
+                if (acBtn) acBtn.textContent = 'C';
+            } else if (theme === 'android-light') {
+                document.body.classList.add('android-light');
+                const acBtn = document.getElementById('ac-button');
+                if (acBtn) acBtn.textContent = 'AC';
+            } else if (theme === 'android-dark') {
+                document.body.classList.add('android-dark');
+                const acBtn = document.getElementById('ac-button');
+                if (acBtn) acBtn.textContent = 'AC';
+            } else {
+                // iPhone
+                const acBtn = document.getElementById('ac-button');
+                if (acBtn) acBtn.textContent = 'AC';
+            }
+
+            // Update button states
+            const themeButtons = ['theme-iphone-btn', 'theme-sa-btn', 'theme-android-light-btn', 'theme-android-dark-btn'];
+            themeButtons.forEach(btnId => {
+                const btn = document.getElementById(btnId);
+                if (btn) btn.classList.remove('selected');
+            });
+
+            const selectedBtn = document.getElementById(`theme-${theme}-btn`);
+            if (selectedBtn) selectedBtn.classList.add('selected');
+        }
+
+        function updateDisplay() {
+            let displayValue = currentValue;
+
+            // Adjust font size based on length - more aggressive scaling
+            let fontSize;
+            if (displayValue.length <= 6) {
+                fontSize = '96px';
+            } else if (displayValue.length === 7) {
+                fontSize = '82px';
+            } else if (displayValue.length === 8) {
+                fontSize = '72px';
+            } else if (displayValue.length === 9) {
+                fontSize = '64px';
+            } else if (displayValue.length === 10) {
+                fontSize = '58px';
+            } else if (displayValue.length === 11) {
+                fontSize = '52px';
+            } else if (displayValue.length === 12) {
+                fontSize = '48px';
+            } else if (displayValue.length === 13) {
+                fontSize = '44px';
+            } else {
+                fontSize = '40px';
+            }
+
+            display.style.fontSize = fontSize;
+            display.textContent = displayValue.replace('.', ',');
+        }
+
+        function appendNumber(num) {
+            // Check if we're waiting for magic trigger
+            if (waitingForMagicTrigger) {
+                triggerMagic();
+                return;
+            }
+
+            if (screenLocked) return;
+
+            if (shouldResetDisplay) {
+                currentValue = num;
+                shouldResetDisplay = false;
+            } else {
+                if (currentValue === '0') {
+                    currentValue = num;
+                } else {
+                    currentValue += num;
+                }
+            }
+            updateDisplay();
+        }
+
+        function appendDecimal() {
+            if (waitingForMagicTrigger) {
+                triggerMagic();
+                return;
+            }
+
+            if (screenLocked) return;
+
+            if (shouldResetDisplay) {
+                currentValue = '0';
+                shouldResetDisplay = false;
+            }
+
+            if (!currentValue.includes('.')) {
+                currentValue += '.';
+            }
+            updateDisplay();
+        }
+
+        function clearAll() {
+            // In Spectator+ mode after magic, show info popup
+            if (magicMode === 'spectator' && magicTriggered) {
+                const infoContent = generateInfoContent();
+                document.getElementById('info-content').innerHTML = infoContent;
+                document.getElementById('info-popup').classList.add('active');
+                return;
+            }
+
+            // In Spectator+ mode, check if we need to prompt for data
+            if (magicMode === 'spectator') {
+                // If nameMode is 'name' and no name entered, prompt
+                if (nameMode === 'name' && !spectatorName) {
+                    showPopupForMode();
+                    return;
+                }
+                // If custom2 and no number entered, prompt (both name and noname modes need number)
+                if (spectatorSubmode === 'custom2' && !custom2Result) {
+                    showPopupForMode();
+                    return;
+                }
+                // noname mode in date/custom: don't prompt for anything
+            }
+
+            // In custom2 standalone without number, show popup
+            if (magicMode === 'custom2' && !custom2Result) {
+                showPopupForMode();
+                return;
+            }
+
+            currentValue = '0';
+            previousValue = null;
+            operation = null;
+            shouldResetDisplay = false;
+            multiplicationCount = 0;
+            magicTriggered = false;
+            waitingForMagicTrigger = false;
+            screenLocked = false;
+            customModeActivated = false;
+            isEqualsLongPress = false;
+            spectatorNumbers = [];
+            clearTimeout(equalsLongPressTimer);
+            document.querySelectorAll('.btn-orange').forEach(btn => btn.classList.remove('active'));
+            updateDisplay();
+        }
+
+        function toggleSign() {
+            if (waitingForMagicTrigger) {
+                triggerMagic();
+                return;
+            }
+
+            if (screenLocked) return;
+
+            if (currentValue !== '0') {
+                currentValue = currentValue.startsWith('-')
+                    ? currentValue.substring(1)
+                    : '-' + currentValue;
+                updateDisplay();
+            }
+        }
+
+        function setOperation(op) {
+            if (waitingForMagicTrigger) {
+                triggerMagic();
+                return;
+            }
+
+            if (screenLocked) return;
+
+            const evt = getCurrentEvent();
+            // Si el clic cae en un <span> dentro del botón, subir al botón padre
+            const btnTarget = evt && evt.target ? (evt.target.closest('button') || evt.target) : null;
+
+            // DATE MODE: Check if we should activate magic (any multiplications + plus)
+            if (magicMode === 'date' && op === '+' && multiplicationCount >= 1 && !magicTriggered) {
+                waitingForMagicTrigger = true;
+
+                // Save current result and operation
+                previousValue = currentValue;
+                operation = '+';
+                shouldResetDisplay = true;
+
+                // Highlight + button
+                document.querySelectorAll('.btn-orange').forEach(btn => btn.classList.remove('active'));
+                if (btnTarget) btnTarget.classList.add('active');
+                return;
+            }
+
+            // CUSTOM MODE: Check if + is pressed after long press on =
+            if (magicMode === 'custom' && op === '+' && customModeActivated && !magicTriggered) {
+                waitingForMagicTrigger = true;
+
+                // Save current result and operation
+                previousValue = currentValue;
+                operation = '+';
+                shouldResetDisplay = true;
+
+                // Highlight + button
+                document.querySelectorAll('.btn-orange').forEach(btn => btn.classList.remove('active'));
+                if (btnTarget) btnTarget.classList.add('active');
+                return;
+            }
+
+            // CUSTOM2 MODE (standalone): same as custom but uses custom2Result
+            if (magicMode === 'custom2' && op === '+' && customModeActivated && !magicTriggered) {
+                waitingForMagicTrigger = true;
+                previousValue = currentValue;
+                operation = '+';
+                shouldResetDisplay = true;
+                document.querySelectorAll('.btn-orange').forEach(btn => btn.classList.remove('active'));
+                if (btnTarget) btnTarget.classList.add('active');
+                return;
+            }
+
+            // SPECTATOR+ MODE
+            if (magicMode === 'spectator' && op === '+' && !magicTriggered) {
+                if (spectatorSubmode === 'date' && multiplicationCount >= 1) {
+                    waitingForMagicTrigger = true;
+                    previousValue = currentValue;
+                    operation = '+';
+                    shouldResetDisplay = true;
+                    document.querySelectorAll('.btn-orange').forEach(btn => btn.classList.remove('active'));
+                    if (btnTarget) btnTarget.classList.add('active');
+                    return;
+                } else if (spectatorSubmode === 'custom' && customModeActivated) {
+                    waitingForMagicTrigger = true;
+                    previousValue = currentValue;
+                    operation = '+';
+                    shouldResetDisplay = true;
+                    document.querySelectorAll('.btn-orange').forEach(btn => btn.classList.remove('active'));
+                    if (btnTarget) btnTarget.classList.add('active');
+                    return;
+                } else if (spectatorSubmode === 'custom2' && customModeActivated) {
+                    waitingForMagicTrigger = true;
+                    previousValue = currentValue;
+                    operation = '+';
+                    shouldResetDisplay = true;
+                    document.querySelectorAll('.btn-orange').forEach(btn => btn.classList.remove('active'));
+                    if (btnTarget) btnTarget.classList.add('active');
+                    return;
+                }
+            }
+
+            if (previousValue !== null && operation && !shouldResetDisplay) {
+                // Don't calculate, just change operation
+                operation = op;
+            } else {
+                previousValue = currentValue;
+                operation = op;
+                shouldResetDisplay = true;
+            }
+
+            // Update active state
+            document.querySelectorAll('.btn-orange').forEach(btn => btn.classList.remove('active'));
+            if (btnTarget) {
+                btnTarget.classList.add('active');
+            }
+        }
+
+        function calculate() {
+            if (operation && previousValue !== null) {
+                let prev = parseFloat(previousValue);
+                let curr = parseFloat(currentValue);
+                let result;
+
+                switch (operation) {
+                    case '+':
+                        result = prev + curr;
+                        break;
+                    case '-':
+                        result = prev - curr;
+                        break;
+                    case '×':
+                        result = prev * curr;
+                        multiplicationCount++;
+
+                        // Capture numbers in Spectator+ mode
+                        if (magicMode === 'spectator' && !magicTriggered) {
+                            // First multiplication: capture both numbers (birthdate and fav number)
+                            if (spectatorNumbers.length === 0) {
+                                spectatorNumbers.push(prev); // Birthdate (first number)
+                                spectatorNumbers.push(curr); // Favorite number (second number)
+                            } else {
+                                // Additional multiplications: just capture as extras
+                                spectatorNumbers.push(curr);
+                            }
+                        }
+                        break;
+                    case '÷':
+                        result = prev / curr;
+                        break;
+                }
+
+                currentValue = result.toString();
+                previousValue = currentValue;
+                operation = null;
+                shouldResetDisplay = true;
+
+                document.querySelectorAll('.btn-orange').forEach(btn => btn.classList.remove('active'));
+                updateDisplay();
+            }
+        }
+
+        function triggerMagic() {
+            magicTriggered = true;
+            waitingForMagicTrigger = false;
+            screenLocked = true;
+
+            // Calculate magic number
+            const magicNum = getMagicNumber();
+            currentValue = magicNum;
+            shouldResetDisplay = false;
+
+            updateDisplay();
+        }
+
+        function getTargetDateTime() {
+            const now = new Date();
+            const seconds = now.getSeconds();
+
+            // Determinar si debemos avanzar al siguiente minuto según el threshold seleccionado
+            let shouldAdvanceMinute = false;
+
+            if (typeof timeThreshold === 'number') {
+                // Threshold fijo: 10s, 15s, 20s
+                shouldAdvanceMinute = seconds >= (60 - timeThreshold);
+            } else if (timeThreshold === '10-15') {
+                // Si faltan entre 10-15 segundos (segundos entre 45-50)
+                shouldAdvanceMinute = seconds >= 45 && seconds <= 50;
+            } else if (timeThreshold === '10-20') {
+                // Si faltan entre 10-20 segundos (segundos entre 40-50)
+                shouldAdvanceMinute = seconds >= 40 && seconds <= 50;
+            }
+
+            if (shouldAdvanceMinute) {
+                now.setMinutes(now.getMinutes() + 1);
+            }
+
+            const day = String(now.getDate()).padStart(2, '0');
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const year = String(now.getFullYear()).slice(-2); // Solo últimos 2 dígitos
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+
+            return day + month + year + hours + minutes;
+        }
+
+        function getMagicNumber() {
+            let target;
+
+            if (magicMode === 'date') {
+                target = getTargetDateTime();
+            } else if (magicMode === 'custom') {
+                target = customResult || '0';
+            } else if (magicMode === 'custom2') {
+                target = custom2Result || '0';
+            } else if (magicMode === 'spectator') {
+                if (spectatorSubmode === 'date') {
+                    target = getTargetDateTime();
+                } else if (spectatorSubmode === 'custom') {
+                    target = spectatorCustomResult || '0';
+                } else if (spectatorSubmode === 'custom2') {
+                    target = custom2Result || '0';
+                }
+            }
+
+            const currentNum = parseFloat(previousValue);
+            const targetNum = parseFloat(target);
+            const difference = targetNum - currentNum;
+
+            return difference.toString();
+        }
+
+        // Long press functions for = button (custom mode)
+        function startEqualsLongPress(e) {
+            e.preventDefault();
+            isEqualsLongPress = false;
+
+            // Enable long press in custom mode OR spectator+ custom submode OR custom2 (standalone or spectator+)
+            const shouldEnableLongPress = 
+                (magicMode === 'custom' && customResult) ||
+                (magicMode === 'custom2' && custom2Result) ||
+                (magicMode === 'spectator' && spectatorSubmode === 'custom' && spectatorCustomResult) ||
+                (magicMode === 'spectator' && spectatorSubmode === 'custom2' && custom2Result);
+
+            if (shouldEnableLongPress) {
+                equalsLongPressTimer = setTimeout(() => {
+                    isEqualsLongPress = true;
+                    
+                    // IMPORTANTE: Calcular el resultado ANTES de activar el modo
+                    calculate();
+                    
+                    // Ahora activar el modo custom
+                    customModeActivated = true;
+                    
+                    // Show confirmation indicator
+                    showLongPressIndicator();
+                }, 550); // 0.55 seconds
+            }
+        }
+
+        function showLongPressIndicator() {
+            const indicator = document.getElementById('longpress-indicator');
+            if (indicator) {
+                indicator.classList.add('show');
+                setTimeout(() => {
+                    indicator.classList.remove('show');
+                }, 2000); // 2 seconds visible
+            }
+        }
+
+        function endEqualsLongPress() {
+            clearTimeout(equalsLongPressTimer);
+
+            // If it was a long press, don't calculate again (already calculated in timeout)
+            if (isEqualsLongPress) {
+                isEqualsLongPress = false;
+                return false; // Prevent double calculation
+            }
+
+            // Normal click: calculate normally
+            calculate();
+            isEqualsLongPress = false;
+        }
+
+        // Secret menu functions
+        function openSecretMenu() {
+            document.getElementById('secret-menu').classList.add('active');
+        }
+
+        function closeSecretMenu() {
+            document.getElementById('secret-menu').classList.remove('active');
+
+            // custom2 standalone: show popup asking only for number
+            if (magicMode === 'custom2') {
+                showPopupForMode();
+            }
+            // Spectator+ mode: show popup only if nameMode requires it
+            else if (magicMode === 'spectator') {
+                // Si es noname, solo pedir número en custom2
+                if (nameMode === 'noname') {
+                    if (spectatorSubmode === 'custom2') {
+                        showPopupForMode(); // Solo pedir número
+                    }
+                    // En otros modos (date, custom) no pedir nada
+                } else {
+                    // Modo name: pedir nombre como siempre
+                    showPopupForMode();
+                }
+            }
+        }
+
+        // Configures and shows the name popup fields depending on current mode/submode
+        function showPopupForMode() {
+            const titleEl = document.getElementById('name-popup-title');
+            const nameField = document.getElementById('name-field');
+            const nameLabel = document.getElementById('name-field-label');
+            const numberField = document.getElementById('number-field');
+            const nameInput = document.getElementById('spectator-name');
+            const numberInput = document.getElementById('popup-number');
+
+            if (magicMode === 'custom2') {
+                // Standalone custom2: only number
+                titleEl.textContent = 'Número personalizado';
+                nameField.style.display = 'none';
+                numberField.style.display = 'block';
+                numberInput.value = '';
+                numberInput.focus();
+            } else if (magicMode === 'spectator' && spectatorSubmode === 'custom2') {
+                // Espectador+ custom2
+                if (nameMode === 'noname') {
+                    // No Name: solo pedir número
+                    titleEl.textContent = 'Número personalizado';
+                    nameField.style.display = 'none';
+                    numberField.style.display = 'block';
+                    numberInput.value = '';
+                    numberInput.focus();
+                } else {
+                    // Name: pedir nombre y número según inputOrder
+                    titleEl.textContent = 'Datos del espectador';
+                    nameField.style.display = 'block';
+                    nameLabel.style.display = 'none';
+                    numberField.style.display = 'none';
+                    
+                    if (inputOrder === 'name-number') {
+                        nameInput.placeholder = 'Ej: Juan, 12345678';
+                    } else {
+                        nameInput.placeholder = 'Ej: 12345678, Juan';
+                    }
+                    
+                    nameInput.value = '';
+                    nameInput.focus();
+                }
+            } else {
+                // Espectador+ hora o personalizado: solo nombre
+                titleEl.textContent = 'Nombre del espectador';
+                nameField.style.display = 'block';
+                nameLabel.style.display = 'none';
+                numberField.style.display = 'none';
+                nameInput.placeholder = 'Escribe el nombre...';
+                nameInput.value = '';
+                nameInput.focus();
+            }
+
+            document.getElementById('name-popup').classList.add('active');
+        }
+
+        function selectMode(mode) {
+            magicMode = mode;
+
+            // Remove all selected states
+            document.getElementById('date-mode-btn').classList.remove('selected');
+            document.getElementById('custom-mode-btn').classList.remove('selected');
+            document.getElementById('custom2-mode-btn').classList.remove('selected');
+            document.getElementById('spectator-mode-btn').classList.remove('selected');
+
+            // Hide all options
+            document.getElementById('date-time-buttons').style.display = 'none';
+            document.getElementById('custom-time-buttons').style.display = 'none';
+            document.getElementById('custom-input-container').classList.remove('active');
+            document.getElementById('spectator-options').style.display = 'none';
+
+            if (mode === 'date') {
+                document.getElementById('date-mode-btn').classList.add('selected');
+                document.getElementById('date-time-buttons').style.display = 'flex';
+            } else if (mode === 'custom') {
+                document.getElementById('custom-mode-btn').classList.add('selected');
+                document.getElementById('custom-input-container').classList.add('active');
+                document.getElementById('custom-time-buttons').style.display = 'flex';
+            } else if (mode === 'custom2') {
+                document.getElementById('custom2-mode-btn').classList.add('selected');
+                // custom2 has no menu options: number is entered via popup
+                custom2Result = '';
+            } else if (mode === 'spectator') {
+                document.getElementById('spectator-mode-btn').classList.add('selected');
+                document.getElementById('spectator-options').style.display = 'block';
+                spectatorNumbers = []; // Reset
+            }
+        }
+
+        function selectSpectatorSubmode(submode) {
+            spectatorSubmode = submode;
+
+            document.getElementById('spectator-date-btn').classList.remove('selected');
+            document.getElementById('spectator-custom-btn').classList.remove('selected');
+            document.getElementById('spectator-custom2-btn').classList.remove('selected');
+
+            // Hide all submode options
+            document.getElementById('spectator-date-time-buttons').style.display = 'none';
+            document.getElementById('spectator-custom-options').style.display = 'none';
+            document.getElementById('spectator-custom2-options').style.display = 'none';
+
+            if (submode === 'date') {
+                document.getElementById('spectator-date-btn').classList.add('selected');
+                document.getElementById('spectator-date-time-buttons').style.display = 'flex';
+            } else if (submode === 'custom') {
+                document.getElementById('spectator-custom-btn').classList.add('selected');
+                document.getElementById('spectator-custom-options').style.display = 'block';
+            } else if (submode === 'custom2') {
+                document.getElementById('spectator-custom2-btn').classList.add('selected');
+                document.getElementById('spectator-custom2-options').style.display = 'block';
+                custom2Result = '';
+            }
+        }
+
+        function selectFormat(format) {
+            spectatorFormat = format;
+
+            document.getElementById('format-list-btn').classList.remove('selected');
+            document.getElementById('format-text-btn').classList.remove('selected');
+
+            if (format === 'list') {
+                document.getElementById('format-list-btn').classList.add('selected');
+                document.getElementById('template-settings-btn').style.display = 'none';
+            } else {
+                document.getElementById('format-text-btn').classList.add('selected');
+                document.getElementById('template-settings-btn').style.display = 'flex';
+            }
+        }
+
+        function selectInputOrder(order) {
+            inputOrder = order;
+
+            document.getElementById('order-name-number-btn').classList.remove('selected');
+            document.getElementById('order-number-name-btn').classList.remove('selected');
+
+            if (order === 'name-number') {
+                document.getElementById('order-name-number-btn').classList.add('selected');
+            } else {
+                document.getElementById('order-number-name-btn').classList.add('selected');
+            }
+        }
+
+        function selectNameMode(mode) {
+            nameMode = mode;
+
+            document.getElementById('name-mode-name-btn').classList.remove('selected');
+            document.getElementById('name-mode-noname-btn').classList.remove('selected');
+
+            if (mode === 'name') {
+                document.getElementById('name-mode-name-btn').classList.add('selected');
+            } else {
+                document.getElementById('name-mode-noname-btn').classList.add('selected');
+            }
+        }
+
+        function confirmName() {
+            const numberInput = document.getElementById('popup-number');
+            const nameInput = document.getElementById('spectator-name');
+
+            if (magicMode === 'custom2') {
+                // Standalone custom2: only number
+                custom2Result = numberInput.value.replace(/\D/g, '');
+            } else if (magicMode === 'spectator' && spectatorSubmode === 'custom2') {
+                // Espectador+ custom2
+                if (nameMode === 'noname') {
+                    // No Name: solo número
+                    spectatorName = ''; // Sin nombre
+                    custom2Result = numberInput.value.replace(/\D/g, '');
+                } else {
+                    // Name: parse based on inputOrder
+                    const input = nameInput.value.trim();
+                    let name = '';
+                    let number = '';
+                    
+                    // Parse with comma first
+                    if (input.includes(',')) {
+                    const parts = input.split(',').map(p => p.trim());
+                    
+                    if (inputOrder === 'name-number') {
+                        // First part is name, rest is number
+                        name = parts[0];
+                        number = parts.slice(1).join('').replace(/\D/g, '');
+                    } else {
+                        // First part is number, rest is name
+                        number = parts[0].replace(/\D/g, '');
+                        name = parts.slice(1).join(' ').trim();
+                    }
+                }
+                // Parse with space
+                else if (input.includes(' ')) {
+                    if (inputOrder === 'name-number') {
+                        // Name first, number last
+                        const lastSpaceIndex = input.lastIndexOf(' ');
+                        name = input.substring(0, lastSpaceIndex).trim();
+                        number = input.substring(lastSpaceIndex + 1).trim().replace(/\D/g, '');
+                    } else {
+                        // Number first, name after first space
+                        const firstSpaceIndex = input.indexOf(' ');
+                        number = input.substring(0, firstSpaceIndex).trim().replace(/\D/g, '');
+                        name = input.substring(firstSpaceIndex + 1).trim();
+                    }
+                }
+                // No separator: try to detect
+                else {
+                    if (inputOrder === 'name-number') {
+                        // Assume text first, numbers at end
+                        const match = input.match(/^([^\d]*)(\d+)$/);
+                        if (match) {
+                            name = match[1].trim();
+                            number = match[2];
+                        } else {
+                            name = input;
+                            number = '';
+                        }
+                    } else {
+                        // Assume numbers first, text at end
+                        const match = input.match(/^(\d+)(.*)$/);
+                        if (match) {
+                            number = match[1];
+                            name = match[2].trim();
+                        } else {
+                            name = input;
+                            number = '';
+                        }
+                    }
+                }
+                
+                spectatorName = name;
+                custom2Result = number;
+                } // End of nameMode === 'name'
+            } else {
+                // Espectador+ hora/personalizado: only name
+                spectatorName = nameInput.value.trim();
+            }
+
+            document.getElementById('name-popup').classList.remove('active');
+            spectatorNumbers = [];
+        }
+
+        function openTemplateEditor() {
+            // Load the correct template based on nameMode
+            if (nameMode === 'name') {
+                document.getElementById('template-text').value = textTemplate;
+                document.getElementById('template-popup-title').textContent = 'Editar Template (Name)';
+            } else {
+                document.getElementById('template-text').value = textTemplateNoName;
+                document.getElementById('template-popup-title').textContent = 'Editar Template (No Name)';
+            }
+            document.getElementById('template-popup').classList.add('active');
+        }
+
+        function closeTemplateEditor() {
+            document.getElementById('template-popup').classList.remove('active');
+        }
+
+        function saveTemplate() {
+            // Save to the correct template based on nameMode
+            if (nameMode === 'name') {
+                textTemplate = document.getElementById('template-text').value;
+            } else {
+                textTemplateNoName = document.getElementById('template-text').value;
+            }
+            closeTemplateEditor();
+        }
+
+        function selectTimeThreshold(threshold) {
+            timeThreshold = threshold;
+
+            // Remove selected class from all time buttons in both groups
+            document.querySelectorAll('.time-btn').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+
+            // Add selected class to clicked button
+            const evt = getCurrentEvent();
+            if (evt && evt.target) {
+                evt.target.classList.add('selected');
+            }
+        }
+
+        document.getElementById('custom-result').addEventListener('input', function (e) {
+            customResult = e.target.value.replace(/\D/g, '');
+            e.target.value = customResult;
+        });
+
+        document.getElementById('spectator-custom-result').addEventListener('input', function (e) {
+            spectatorCustomResult = e.target.value.replace(/\D/g, '');
+            e.target.value = spectatorCustomResult;
+        });
+
+        // Spectator+ helper functions
+        function calculateAge(birthdate) {
+            const bdStr = birthdate.toString().padStart(6, '0');
+            const day = parseInt(bdStr.substring(0, 2));
+            const month = parseInt(bdStr.substring(2, 4));
+            let year = parseInt(bdStr.substring(4, 6));
+
+            // Smart dynamic year detection that works forever:
+            const currentYear = new Date().getFullYear();
+            const currentYearShort = currentYear % 100; // Last 2 digits of current year
+
+            // Try both interpretations
+            const year2000s = 2000 + year;
+            const year1900s = 1900 + year;
+
+            // Calculate what the age would be in each case
+            const age2000s = currentYear - year2000s;
+            const age1900s = currentYear - year1900s;
+
+            // Decision logic:
+            // 1. If 2000s would make them not born yet (negative age), use 1900s
+            // 2. If 1900s would make them over 110 years old (unrealistic), use 2000s
+            // 3. Otherwise: if the year is <= current year's last 2 digits, assume 2000s
+            //    Example in 2026: 00-26 = 2000s, 27-99 = 1900s
+            //    Example in 2050: 00-50 = 2000s, 51-99 = 1900s
+
+            if (age2000s < 0) {
+                // Not born yet in 2000s interpretation, must be 1900s
+                year = year1900s;
+            } else if (age1900s > 110) {
+                // Over 110 years old in 1900s interpretation, must be 2000s
+                year = year2000s;
+            } else {
+                // Both valid - use current year as pivot
+                year = year <= currentYearShort ? year2000s : year1900s;
+            }
+
+            const today = new Date();
+            const birthDate = new Date(year, month - 1, day);
+
+            let age = today.getFullYear() - birthDate.getFullYear();
+            const monthDiff = today.getMonth() - birthDate.getMonth();
+
+            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+                age--;
+            }
+
+            return age;
+        }
+
+        function getZodiacSign(birthdate) {
+            const bdStr = birthdate.toString().padStart(6, '0');
+            const day = parseInt(bdStr.substring(0, 2));
+            const month = parseInt(bdStr.substring(2, 4));
+
+            // Zodiac signs with proper date ranges
+            if ((month === 3 && day >= 21) || (month === 4 && day <= 19)) return 'Aries';
+            if ((month === 4 && day >= 20) || (month === 5 && day <= 20)) return 'Tauro';
+            if ((month === 5 && day >= 21) || (month === 6 && day <= 20)) return 'Géminis';
+            if ((month === 6 && day >= 21) || (month === 7 && day <= 22)) return 'Cáncer';
+            if ((month === 7 && day >= 23) || (month === 8 && day <= 22)) return 'Leo';
+            if ((month === 8 && day >= 23) || (month === 9 && day <= 22)) return 'Virgo';
+            if ((month === 9 && day >= 23) || (month === 10 && day <= 22)) return 'Libra';
+            if ((month === 10 && day >= 23) || (month === 11 && day <= 21)) return 'Escorpio';
+            if ((month === 11 && day >= 22) || (month === 12 && day <= 21)) return 'Sagitario';
+            if ((month === 12 && day >= 22) || (month === 1 && day <= 19)) return 'Capricornio';
+            if ((month === 1 && day >= 20) || (month === 2 && day <= 18)) return 'Acuario';
+            if ((month === 2 && day >= 19) || (month === 3 && day <= 20)) return 'Piscis';
+
+            return 'Desconocido';
+        }
+
+        function generateInfoContent() {
+            if (spectatorNumbers.length < 2) {
+                return '<p style="color: #999;">No hay suficiente información</p>';
+            }
+
+            const birthdate = spectatorNumbers[0];
+            const favNumber = spectatorNumbers[1];
+            const age = calculateAge(birthdate);
+            const zodiac = getZodiacSign(birthdate);
+
+            if (spectatorFormat === 'list') {
+                // Lista: mostrar u ocultar nombre según nameMode
+                let nameRow = '';
+                if (nameMode === 'name' && spectatorName) {
+                    nameRow = `
+                        <li>
+                            <div class="info-label">Nombre</div>
+                            <div class="info-value">${spectatorName}</div>
+                        </li>
+                    `;
+                }
+                
+                return `
+                    <ul class="info-list">
+                        ${nameRow}
+                        <li>
+                            <div class="info-label">Edad</div>
+                            <div class="info-value">${age} años</div>
+                        </li>
+                        <li>
+                            <div class="info-label">Signo Zodiacal</div>
+                            <div class="info-value">${zodiac}</div>
+                        </li>
+                        <li>
+                            <div class="info-label">Número Favorito</div>
+                            <div class="info-value">${favNumber}</div>
+                        </li>
+                    </ul>
+                `;
+            } else {
+                // Text format - use different template based on nameMode
+                let text;
+                
+                if (nameMode === 'name' && spectatorName) {
+                    // Use template with [Nombre]
+                    text = textTemplate;
+                    text = text.replace(/\[Nombre\]/g, spectatorName);
+                } else {
+                    // Use No Name template (without [Nombre])
+                    text = textTemplateNoName;
+                }
+                
+                text = text.replace(/\[Edad\]/g, age.toString());
+                text = text.replace(/\[Signo zodiacal\]/g, zodiac);
+
+                // Show favorite number separately in text mode
+                document.getElementById('fav-number-display').innerHTML = `Número favorito: ${favNumber}`;
+                document.getElementById('fav-number-display').style.display = 'block';
+
+                return `<p style="color: #fff; line-height: 1.8;">${text}</p>`;
+            }
+        }
+
+        function closeInfoPopup() {
+            // Save to registry before closing (if in Spectator+ mode and nameMode is 'name')
+            if (magicMode === 'spectator' && nameMode === 'name' && spectatorName && spectatorNumbers.length >= 2) {
+                const birthdate = spectatorNumbers[0];
+                const favNumber = spectatorNumbers[1];
+                const age = calculateAge(birthdate);
+                const zodiac = getZodiacSign(birthdate);
+                
+                const registryEntry = {
+                    id: Date.now(),
+                    timestamp: new Date().toISOString(),
+                    name: spectatorName,
+                    birthdate: birthdate,
+                    age: age,
+                    zodiac: zodiac,
+                    favNumber: favNumber,
+                    extras: spectatorNumbers.slice(2),
+                    comment: ''
+                };
+                
+                registryData.push(registryEntry);
+                saveRegistryData();
+            }
+            
+            document.getElementById('info-popup').classList.remove('active');
+            document.getElementById('fav-number-display').style.display = 'none';
+
+            // Reset everything
+            currentValue = '0';
+            previousValue = null;
+            operation = null;
+            shouldResetDisplay = false;
+            multiplicationCount = 0;
+            magicTriggered = false;
+            waitingForMagicTrigger = false;
+            screenLocked = false;
+            customModeActivated = false;
+            spectatorNumbers = [];
+            spectatorName = ''; // Reset name so AC will prompt for name again
+            custom2Result = ''; // Reset number so popup will re-appear
+
+            document.querySelectorAll('.btn-orange').forEach(btn => btn.classList.remove('active'));
+            updateDisplay();
+        }
+
+        function copyInfo() {
+            let textToCopy = '';
+
+            if (spectatorNumbers.length < 2) return;
+
+            const birthdate = spectatorNumbers[0];
+            const favNumber = spectatorNumbers[1];
+            const age = calculateAge(birthdate);
+            const zodiac = getZodiacSign(birthdate);
+
+            if (spectatorFormat === 'list') {
+                textToCopy = `Nombre: ${spectatorName}
+Edad: ${age} años
+Signo Zodiacal: ${zodiac}
+Número Favorito: ${favNumber}`;
+            } else {
+                let text = textTemplate;
+                text = text.replace(/\[Nombre\]/g, spectatorName);
+                text = text.replace(/\[Edad\]/g, age.toString());
+                text = text.replace(/\[Signo zodiacal\]/g, zodiac);
+                textToCopy = text;
+            }
+
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                const evt = getCurrentEvent();
+                const btn = evt && evt.target ? evt.target : null;
+                if (btn) {
+                    const originalText = btn.textContent;
+                    btn.textContent = '¡Copiado!';
+                    setTimeout(() => {
+                        btn.textContent = originalText;
+                    }, 1500);
+                }
+            }).catch(err => {
+                console.error('Error al copiar: ', err);
+                alert('No se pudo copiar al portapapeles. Por favor, selecciona y copia manualmente.');
+            });
+        }
+
+        // Send prediction to Notes app
+        function sendToNotes() {
+            if (spectatorNumbers.length < 2) {
+                alert('No hay suficiente información para enviar');
+                return;
+            }
+
+            const birthdate = spectatorNumbers[0];
+            const favNumber = spectatorNumbers[1];
+            const age = calculateAge(birthdate);
+            const zodiac = getZodiacSign(birthdate);
+
+            // Prepare data to send
+            const predictionData = {
+                timestamp: new Date().toISOString(),
+                age: age,
+                zodiac: zodiac,
+                favNumber: favNumber,
+                name: nameMode === 'name' ? spectatorName : null
+            };
+
+            // Add text format if using text mode
+            if (spectatorFormat === 'text') {
+                let text;
+                if (nameMode === 'name' && spectatorName) {
+                    text = textTemplate;
+                    text = text.replace(/\[Nombre\]/g, spectatorName);
+                } else {
+                    text = textTemplateNoName;
+                }
+                text = text.replace(/\[Edad\]/g, age.toString());
+                text = text.replace(/\[Signo zodiacal\]/g, zodiac);
+                predictionData.text = text + `\n\nNúmero Favorito: ${favNumber}`;
+            }
+
+            // Save to localStorage (shared with Notes app)
+            try {
+                localStorage.setItem('calculadora-prediccion-data', JSON.stringify(predictionData));
+                
+                // Visual feedback
+                const btn = document.querySelector('.send-btn');
+                if (btn) {
+                    const originalContent = btn.textContent;
+                    btn.textContent = '✓';
+                    btn.style.background = '#34c759';
+                    setTimeout(() => {
+                        btn.textContent = originalContent;
+                    }, 1500);
+                }
+                
+                // Show confirmation
+                setTimeout(() => {
+                    alert('✅ Predicción enviada\n\nAbre la app de Notas para verla.');
+                }, 200);
+            } catch (err) {
+                console.error('Error al enviar:', err);
+                alert('Error al enviar la predicción. Asegúrate de que ambas apps estén en el mismo dominio.');
+            }
+        }
+
+        // Registry functions
+        function openRegistry() {
+            closeSecretMenu();
+            loadRegistry();
+            renderRegistry();
+            document.getElementById('registry-popup').classList.add('active');
+        }
+
+        function closeRegistry() {
+            document.getElementById('registry-popup').classList.remove('active');
+        }
+
+        function renderRegistry() {
+            const listContainer = document.getElementById('registry-list');
+            
+            if (registryData.length === 0) {
+                listContainer.innerHTML = '<div class="empty-registry">No hay registros guardados</div>';
+                return;
+            }
+            
+            // Sort by most recent first
+            const sortedData = [...registryData].reverse();
+            
+            listContainer.innerHTML = sortedData.map(entry => {
+                const date = new Date(entry.timestamp);
+                const dateStr = date.toLocaleDateString('es-ES', { 
+                    day: '2-digit', 
+                    month: '2-digit', 
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                
+                return `
+                    <div class="registry-item">
+                        <div class="registry-item-header">
+                            <div class="registry-name">${entry.name}</div>
+                            <div class="registry-actions">
+                                <button class="registry-edit-btn" data-action="edit" data-id="${entry.id}" title="Añadir comentario">⚙️</button>
+                                <button class="registry-delete-btn" data-action="delete" data-id="${entry.id}" title="Eliminar">🗑️</button>
+                            </div>
+                        </div>
+                        <div class="registry-info">
+                            <div class="registry-info-row">
+                                <span class="registry-label">Fecha:</span>
+                                <span>${dateStr}</span>
+                            </div>
+                            <div class="registry-info-row">
+                                <span class="registry-label">Edad:</span>
+                                <span>${entry.age} años</span>
+                            </div>
+                            <div class="registry-info-row">
+                                <span class="registry-label">Signo:</span>
+                                <span>${entry.zodiac}</span>
+                            </div>
+                            <div class="registry-info-row">
+                                <span class="registry-label">Nº Favorito:</span>
+                                <span>${entry.favNumber}</span>
+                            </div>
+                            ${entry.extras && entry.extras.length > 0 ? `
+                            <div class="registry-info-row">
+                                <span class="registry-label">Extras:</span>
+                                <span>${entry.extras.join(', ')}</span>
+                            </div>
+                            ` : ''}
+                            ${entry.comment ? `
+                            <div class="registry-comment">
+                                💬 ${entry.comment}
+                            </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            // Add event delegation for buttons
+            listContainer.querySelectorAll('.registry-edit-btn, .registry-delete-btn').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const action = this.getAttribute('data-action');
+                    const id = parseInt(this.getAttribute('data-id'));
+                    
+                    if (action === 'edit') {
+                        openCommentEditor(id);
+                    } else if (action === 'delete') {
+                        deleteRegistry(id);
+                    }
+                });
+            });
+        }
+
+        function deleteRegistry(id) {
+            if (confirm('¿Eliminar este registro?')) {
+                registryData = registryData.filter(entry => entry.id !== id);
+                saveRegistryData();
+                renderRegistry();
+            }
+        }
+
+        function openCommentEditor(id) {
+            currentEditingRegistryId = id;
+            const entry = registryData.find(e => e.id === id);
+            if (entry) {
+                document.getElementById('comment-textarea').value = entry.comment || '';
+                document.getElementById('comment-popup').classList.add('active');
+            }
+        }
+
+        function closeCommentEditor() {
+            document.getElementById('comment-popup').classList.remove('active');
+            currentEditingRegistryId = null;
+        }
+
+        function saveComment() {
+            const comment = document.getElementById('comment-textarea').value.trim();
+            if (currentEditingRegistryId) {
+                const entry = registryData.find(e => e.id === currentEditingRegistryId);
+                if (entry) {
+                    entry.comment = comment;
+                    saveRegistryData();
+                    renderRegistry();
+                }
+            }
+            closeCommentEditor();
+        }
+
+        // Initialize
+        loadRegistry();
+        updateDisplay();
+    </script>
+
+
+</body></html>

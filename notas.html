@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Notas</title>
+    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Notas">
+    <link rel="apple-touch-icon" href="icon-notas.png">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #f0eeea;
+            color: #000;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* LISTA */
+        .list {
+            min-height: 100vh;
+            padding-top: env(safe-area-inset-top);
+        }
+
+        .header {
+            background: #f0eeea;
+            padding: 0 20px;
+        }
+
+        .nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 44px;
+        }
+
+        .back {
+            color: #ff9500;
+            font-size: 17px;
+            text-decoration: none;
+            pointer-events: none;
+        }
+
+        .menu-btn {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: none;
+            border: 2px solid #ff9500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .dots {
+            display: flex;
+            gap: 4.5px;
+        }
+
+        .dot {
+            width: 4px;
+            height: 4px;
+            background: #ff9500;
+            border-radius: 50%;
+        }
+
+        .title {
+            font-size: 34px;
+            font-weight: 700;
+            margin: 4px 0 20px 0;
+        }
+
+        .section {
+            font-size: 22px;
+            font-weight: 700;
+            margin: 20px 20px 10px 20px;
+        }
+
+        .note {
+            background: #fff;
+            border-radius: 10px;
+            padding: 12px 16px;
+            margin: 0 20px 10px 20px;
+        }
+
+        .note-top {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 2px;
+        }
+
+        .note-title {
+            font-size: 16px;
+            font-weight: 600;
+            letter-spacing: -0.32px;
+        }
+
+        .note-date {
+            font-size: 15px;
+            color: rgba(60, 60, 67, 0.6);
+            letter-spacing: -0.24px;
+        }
+
+        .note-preview {
+            font-size: 15px;
+            color: rgba(60, 60, 67, 0.6);
+            letter-spacing: -0.24px;
+            line-height: 20px;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 30px 0;
+            font-size: 13px;
+            color: rgba(60, 60, 67, 0.6);
+        }
+
+        /* BOTÓN CREAR - cuadrado naranja con lápiz */
+        .create {
+            position: fixed;
+            bottom: 30px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background: #ff9500;
+            border: none;
+            border-radius: 50%;
+            box-shadow: 0 4px 12px rgba(255, 149, 0, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .create-icon {
+            position: relative;
+            width: 26px;
+            height: 26px;
+        }
+
+        .square {
+            position: absolute;
+            width: 18px;
+            height: 18px;
+            border: 2.2px solid #fff;
+            border-radius: 2.5px;
+            bottom: 2px;
+            left: 4px;
+        }
+
+        .pencil {
+            position: absolute;
+            width: 12px;
+            height: 2.2px;
+            background: #fff;
+            top: 2px;
+            right: 2px;
+            transform: rotate(45deg);
+            border-radius: 1px;
+        }
+
+        .pencil::before {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 0;
+            border-left: 2.5px solid transparent;
+            border-right: 2.5px solid transparent;
+            border-bottom: 4px solid #fff;
+            top: -3.5px;
+            left: 3.5px;
+        }
+
+        /* DETALLE */
+        .detail {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #ffffff;
+            z-index: 100;
+            padding-top: env(safe-area-inset-top);
+            flex-direction: column;
+        }
+
+        .detail.active {
+            display: flex;
+        }
+
+        .det-header {
+            background: #ffffff;
+            padding: 0 20px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+
+        .det-back {
+            color: #ff9500;
+            font-size: 17px;
+            text-decoration: none;
+        }
+
+        .det-tools {
+            display: flex;
+            gap: 16px;
+        }
+
+        .tool {
+            background: none;
+            border: none;
+            padding: 0;
+        }
+
+        /* Icono compartir - cuadrado con flecha arriba */
+        .share-icon {
+            width: 22px;
+            height: 26px;
+            position: relative;
+        }
+
+        .share-box {
+            width: 18px;
+            height: 14px;
+            border: 2px solid #ff9500;
+            border-top: none;
+            border-radius: 0 0 3px 3px;
+            position: absolute;
+            bottom: 0;
+            left: 2px;
+        }
+
+        .share-arrow {
+            position: absolute;
+            width: 2px;
+            height: 12px;
+            background: #ff9500;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .share-arrow::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 0;
+            border-left: 4px solid transparent;
+            border-right: 4px solid transparent;
+            border-bottom: 5px solid #ff9500;
+            top: -4px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        /* Tres puntos - horizontal como menú */
+        .more-icon {
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .more-dots {
+            display: flex;
+            gap: 4px;
+        }
+
+        .more-dot {
+            width: 4px;
+            height: 4px;
+            background: #ff9500;
+            border-radius: 50%;
+        }
+
+        .det-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px 20px;
+        }
+
+        .det-title {
+            font-size: 32px;
+            font-weight: 700;
+            color: #48484a;
+            margin-bottom: 24px;
+        }
+
+        .det-text {
+            font-size: 17px;
+            line-height: 26px;
+            color: #000;
+            white-space: pre-wrap;
+        }
+
+        /* BARRA INFERIOR DETALLE */
+        .bottom-bar {
+            background: #ffffff;
+            border-top: 0.5px solid rgba(60, 60, 67, 0.12);
+            padding: 8px 20px;
+            padding-bottom: max(8px, env(safe-area-inset-bottom));
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            height: 50px;
+            flex-shrink: 0;
+        }
+
+        .bar-btn {
+            background: none;
+            border: none;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+        }
+
+        /* Iconos barra inferior */
+        .check-icon, .clip-icon, .camera-icon, .pen-icon {
+            width: 24px;
+            height: 24px;
+            position: relative;
+        }
+
+        /* Checklist */
+        .check-circle {
+            width: 16px;
+            height: 16px;
+            border: 2.2px solid #ff9500;
+            border-radius: 50%;
+            position: absolute;
+            top: 4px;
+            left: 4px;
+        }
+
+        .check-line {
+            position: absolute;
+            width: 10px;
+            height: 2px;
+            background: #ff9500;
+            bottom: 2px;
+        }
+
+        /* Clip */
+        .clip-shape {
+            width: 10px;
+            height: 18px;
+            border: 2.2px solid #ff9500;
+            border-right: none;
+            border-radius: 8px 0 0 8px;
+            position: absolute;
+            top: 3px;
+            left: 7px;
+            transform: rotate(-45deg);
+        }
+
+        /* Cámara */
+        .cam-body {
+            width: 20px;
+            height: 16px;
+            border: 2.2px solid #ff9500;
+            border-radius: 4px;
+            position: absolute;
+            top: 6px;
+            left: 2px;
+        }
+
+        .cam-lens {
+            width: 8px;
+            height: 8px;
+            border: 2.2px solid #ff9500;
+            border-radius: 50%;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        /* Lápiz */
+        .pen-body {
+            width: 2.2px;
+            height: 18px;
+            background: #ff9500;
+            position: absolute;
+            top: 3px;
+            left: 11px;
+            transform: rotate(45deg);
+        }
+
+        .pen-tip {
+            width: 0;
+            height: 0;
+            border-left: 3px solid transparent;
+            border-right: 3px solid transparent;
+            border-top: 5px solid #ff9500;
+            position: absolute;
+            bottom: -4px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        /* MENU */
+        .menu {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 200;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .menu.active {
+            display: flex;
+        }
+
+        .menu-panel {
+            background: rgba(255, 255, 255, 0.94);
+            backdrop-filter: blur(27px);
+            -webkit-backdrop-filter: blur(27px);
+            border-radius: 14px;
+            width: 90%;
+            max-width: 350px;
+        }
+
+        .menu-top {
+            padding: 16px 20px;
+            border-bottom: 0.33px solid rgba(60, 60, 67, 0.29);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .menu-title {
+            font-size: 17px;
+            font-weight: 600;
+        }
+
+        .close {
+            font-size: 28px;
+            color: rgba(60, 60, 67, 0.6);
+            background: none;
+            border: none;
+        }
+
+        .menu-option {
+            padding: 14px 20px;
+            background: transparent;
+            border: none;
+            width: 100%;
+            text-align: center;
+            font-size: 17px;
+            color: #007aff;
+        }
+    </style>
+</head>
+<body>
+    <div class="list" id="list">
+        <div class="header">
+            <div class="nav">
+                <a href="#" class="back" onclick="event.preventDefault()">‹ Carpetas</a>
+                <button class="menu-btn" onclick="openMenu()">
+                    <div class="dots">
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                    </div>
+                </button>
+            </div>
+            <div class="title">Notas</div>
+        </div>
+
+        <div class="section">Últimos 7 días</div>
+        <div id="notes"></div>
+
+        <div class="footer" id="count">0 notas</div>
+
+        <button class="create" onclick="alert('Crear nota')">
+            <div class="create-icon">
+                <div class="square"></div>
+                <div class="pencil"></div>
+            </div>
+        </button>
+    </div>
+
+    <div class="detail" id="detail">
+        <div class="det-header">
+            <a href="#" class="det-back" onclick="event.preventDefault(); closeDetail()">‹ Atrás</a>
+            <div class="det-tools">
+                <button class="tool" onclick="alert('Compartir')">
+                    <div class="share-icon">
+                        <div class="share-box"></div>
+                        <div class="share-arrow"></div>
+                    </div>
+                </button>
+                <button class="tool" onclick="alert('Más opciones')">
+                    <div class="more-icon">
+                        <div class="more-dots">
+                            <div class="more-dot"></div>
+                            <div class="more-dot"></div>
+                            <div class="more-dot"></div>
+                        </div>
+                    </div>
+                </button>
+            </div>
+        </div>
+
+        <div class="det-content">
+            <div class="det-title">Predicción</div>
+            <div class="det-text" id="text">...</div>
+        </div>
+
+        <div class="bottom-bar">
+            <button class="bar-btn" onclick="alert('Checklist')">
+                <div class="check-icon">
+                    <div class="check-circle"></div>
+                    <div class="check-line"></div>
+                </div>
+            </button>
+            <button class="bar-btn" onclick="alert('Adjuntar')">
+                <div class="clip-icon">
+                    <div class="clip-shape"></div>
+                </div>
+            </button>
+            <button class="bar-btn" onclick="alert('Cámara')">
+                <div class="camera-icon">
+                    <div class="cam-body">
+                        <div class="cam-lens"></div>
+                    </div>
+                </div>
+            </button>
+            <button class="bar-btn" onclick="alert('Dibujar')">
+                <div class="pen-icon">
+                    <div class="pen-body">
+                        <div class="pen-tip"></div>
+                    </div>
+                </div>
+            </button>
+        </div>
+    </div>
+
+    <div class="menu" id="menu">
+        <div class="menu-panel">
+            <div class="menu-top">
+                <div class="menu-title">Opciones</div>
+                <button class="close" onclick="closeMenu()">×</button>
+            </div>
+            <button class="menu-option" onclick="check()">Estado de conexión</button>
+        </div>
+    </div>
+
+    <script>
+        const K = 'calculadora-prediccion-data';
+        let d = null;
+
+        function load() {
+            try {
+                const r = localStorage.getItem(K);
+                d = r ? JSON.parse(r) : null;
+                render();
+            } catch {
+                render();
+            }
+        }
+
+        function render() {
+            const n = document.getElementById('notes');
+            
+            if (!d) {
+                n.innerHTML = `
+                    <div class="note" onclick="openDetail()">
+                        <div class="note-top">
+                            <div class="note-title">Predicción</div>
+                            <div class="note-date">Esperando</div>
+                        </div>
+                        <div class="note-preview">Sin predicciones aún</div>
+                    </div>
+                `;
+            } else {
+                const dt = new Date(d.timestamp);
+                const day = dt.toLocaleDateString('es-ES', { day: 'numeric', month: 'numeric', year: '2-digit' });
+                const preview = d.name 
+                    ? `${day}  ${d.name}, ${d.age} años, ${d.zodiac}`
+                    : `${day}  ${d.age} años, ${d.zodiac}`;
+
+                n.innerHTML = `
+                    <div class="note" onclick="openDetail()">
+                        <div class="note-top">
+                            <div class="note-title">Predicción</div>
+                            <div class="note-date">sábado</div>
+                        </div>
+                        <div class="note-preview">${preview}</div>
+                    </div>
+                `;
+            }
+            
+            document.getElementById('count').textContent = '1 nota';
+        }
+
+        function openDetail() {
+            if (!d) {
+                document.getElementById('text').textContent = 
+                    'Sin predicciones aún.\n\nUsa la calculadora mágica en modo Espectador+ y envía la información aquí.';
+            } else {
+                let txt = '';
+                if (d.text) {
+                    txt = d.text;
+                } else {
+                    if (d.name) txt += `Hoy haré un poco de magia para ${d.name}. `;
+                    txt += `Tiene ${d.age} años y me da la sensación de que su signo zodiacal es ${d.zodiac}. `;
+                    if (d.favNumber) txt += `Su número favorito es el ${d.favNumber}. `;
+                    txt += `Cada pequeño detalle suyo ha sido parte de la ilusión que he creado.`;
+                }
+                document.getElementById('text').textContent = txt;
+            }
+            document.getElementById('detail').classList.add('active');
+        }
+
+        function closeDetail() {
+            document.getElementById('detail').classList.remove('active');
+        }
+
+        function openMenu() {
+            document.getElementById('menu').classList.add('active');
+        }
+
+        function closeMenu() {
+            document.getElementById('menu').classList.remove('active');
+        }
+
+        function check() {
+            alert(localStorage.getItem(K) 
+                ? '✅ Conexión activa\n\nLa calculadora está enviando datos correctamente.' 
+                : '⚠️ Sin datos\n\nAún no hay predicciones.\n\nAbre la calculadora mágica, haz una predicción en Espectador+ y presiona "Enviar".');
+            closeMenu();
+        }
+
+        window.addEventListener('storage', e => {
+            if (e.key === K) load();
+        });
+
+        load();
+        setInterval(load, 2000);
+    </script>
+</body>
+</html>
