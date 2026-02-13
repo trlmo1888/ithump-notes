@@ -2065,6 +2065,34 @@
             return 'Desconocido';
         }
 
+        function formatBirthdate(birthdate) {
+            const bdStr = birthdate.toString().padStart(6, '0');
+            const day = parseInt(bdStr.substring(0, 2));
+            const month = parseInt(bdStr.substring(2, 4));
+            let year = parseInt(bdStr.substring(4, 6));
+
+            // Same year logic as calculateAge
+            const currentYear = new Date().getFullYear();
+            const currentYearShort = currentYear % 100;
+            const year2000s = 2000 + year;
+            const year1900s = 1900 + year;
+            const age2000s = currentYear - year2000s;
+            const age1900s = currentYear - year1900s;
+
+            if (age2000s < 0) {
+                year = year1900s;
+            } else if (age1900s > 110) {
+                year = year2000s;
+            } else {
+                year = year <= currentYearShort ? year2000s : year1900s;
+            }
+
+            const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 
+                              'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+
+            return `${day} ${monthNames[month - 1]} ${year}`;
+        }
+
         function generateInfoContent() {
             if (spectatorNumbers.length < 2) {
                 return '<p style="color: #999;">No hay suficiente información</p>';
@@ -2074,6 +2102,7 @@
             const favNumber = spectatorNumbers[1];
             const age = calculateAge(birthdate);
             const zodiac = getZodiacSign(birthdate);
+            const birthdateFormatted = formatBirthdate(birthdate);
 
             if (spectatorFormat === 'list') {
                 // Lista: mostrar u ocultar nombre según nameMode
@@ -2093,6 +2122,10 @@
                         <li>
                             <div class="info-label">Edad</div>
                             <div class="info-value">${age} años</div>
+                        </li>
+                        <li>
+                            <div class="info-label">Fecha de Nacimiento</div>
+                            <div class="info-value">${birthdateFormatted}</div>
                         </li>
                         <li>
                             <div class="info-label">Signo Zodiacal</div>
@@ -2305,6 +2338,8 @@ Número Favorito: ${favNumber}`;
                     minute: '2-digit'
                 });
                 
+                const birthdateFormatted = formatBirthdate(entry.birthdate);
+                
                 return `
                     <div class="registry-item">
                         <div class="registry-item-header">
@@ -2322,6 +2357,10 @@ Número Favorito: ${favNumber}`;
                             <div class="registry-info-row">
                                 <span class="registry-label">Edad:</span>
                                 <span>${entry.age} años</span>
+                            </div>
+                            <div class="registry-info-row">
+                                <span class="registry-label">Nacimiento:</span>
+                                <span>${birthdateFormatted}</span>
                             </div>
                             <div class="registry-info-row">
                                 <span class="registry-label">Signo:</span>
@@ -2405,4 +2444,5 @@ Número Favorito: ${favNumber}`;
     </script>
 
 
-</body></html>
+</body>
+</html>
